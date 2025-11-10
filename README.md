@@ -6,3 +6,5 @@ For: COSC 420 - Dr. Yaping Jing
 - Cryptography/Password Cracker
 - Mandelbrot set visualization - would demonstrate math+cs
 - Black hole/gravity physics simulation
+- Parallel solver for PDEs
+- Monte Carlo financial simulation
