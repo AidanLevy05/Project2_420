@@ -1,1 +1,2 @@
-SQL
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Accord" AND YearMake=2015 AND (Color="Blue" OR Color="Gray");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Civic" AND YearMake=2021 AND (Color="Blue" OR Color="Red");
