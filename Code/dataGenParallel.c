@@ -1,6 +1,6 @@
 /*
 
-dataGen.c
+dataGenParallel.c
 
 Authors:
     Aidan Levy
@@ -26,11 +26,11 @@ The following colums are:
 
 */
 
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <omp.h>
 
 /*
 Function Prototypes
@@ -105,8 +105,8 @@ void generate_data(const char *filename, long n) {
     printf("ID Model YearMake Color Price Dealer\n");
   }
 #pragma omp parallel {
-  #pragma omp for {
-   for (i = 0; i < n; i++) {
+#pragma omp for {
+  for (i = 0; i < n; i++) {
     int id = 1000 + (int)i;
     const char *model = models[rand() % numModels];
     int year = years[rand() % numYears];
@@ -119,12 +119,11 @@ void generate_data(const char *filename, long n) {
     if (printToConsole) {
       printf("%d %s %d %s %d %s\n", id, model, year, color, price, dealer);
     }
-
-    }
   }
 }
+}
 
-  fclose(fp);
+fclose(fp);
 }
 
 /*
