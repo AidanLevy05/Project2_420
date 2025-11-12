@@ -1,2 +1,5 @@
 SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Accord" AND YearMake=2015 AND (Color="Blue" OR Color="Gray");
 SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Civic" AND YearMake=2021 AND (Color="Blue" OR Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Camry" AND YearMake=2013 AND (Color="Gray" OR Color="Black");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Focus" AND YearMake=2016 AND (Color="Green" OR Color="White" OR Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Maxima" AND YearMake=2018 AND (Color="Red");
