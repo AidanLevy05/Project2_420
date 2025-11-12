@@ -3,4 +3,8 @@ By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
 # TODO
-- Dean: Work on parallel version of dataGen.c 
+- Dean: Implement dataGenParallel.c
+- Maddie: Create test cases for sql.txt
+- Nick: Read and understand BTree Documentation
+- Austin: Read and understand BTree Documentation
+- Aidan: Read and understand BTree Documentation
