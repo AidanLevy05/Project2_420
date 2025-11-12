@@ -52,6 +52,12 @@ typedef struct {
   char Dealer[20];
 } CarInventory;
 
+typedef struct {
+  char select_attrs[6][20];
+  int num_select_attrs;
+  char where_raw[256];
+} Query;
+
 /*
 Function Prototypes
 */
@@ -59,6 +65,10 @@ int car_compare(const void *a, const void *b, void *udata);
 struct btree *load_database(const char *filename);
 void print_all_tuples(struct btree *tree);
 bool print_iter(const void *item, void *udata);
+// void load_queries(const char *filename, Query **queries, int *num_queries);
+// void process_query(struct btree *tree, Query *q);
+// int match_where(const CarInventory *car, const char *where_raw);
+// void print_selected(const CarInventory *car, Query *q);
 
 int main(int argc, char **argv) {
 
