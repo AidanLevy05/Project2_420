@@ -3,4 +3,5 @@ By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
 # TODO
-- Dean: Work on parallel version of dataGen.c 
+- Dean: Work on parallel version of dataGen.c
+- 8=====D
