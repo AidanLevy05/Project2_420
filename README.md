@@ -10,7 +10,7 @@ For: COSC 420 - Dr. Yaping Jing
 
 # TODO
 - Dean: 
-	- ~~ Implement dataGenParallel.c ~~
+	~~ - Implement dataGenParallel.c ~~
 	- Start working QPESeq.c -- Do not overwrite with Nick -- Clearly communicate when adding features to QPESeq.c
 - Maddie: 
 	- Create test cases for sql.txt
