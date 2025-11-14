@@ -65,10 +65,10 @@ int car_compare(const void *a, const void *b, void *udata);
 struct btree *load_database(const char *filename);
 void print_all_tuples(struct btree *tree);
 bool print_iter(const void *item, void *udata);
-// void load_queries(const char *filename, Query **queries, int *num_queries);
-// void process_query(struct btree *tree, Query *q);
-// int match_where(const CarInventory *car, const char *where_raw);
-// void print_selected(const CarInventory *car, Query *q);
+//  void load_queries(const char *filename, Query **queries, int *num_queries);
+//  void process_query(struct btree *tree, Query *q);
+//  int match_where(const CarInventory *car, const char *where_raw);
+//  void print_selected(const CarInventory *car, Query *q);
 
 int main(int argc, char **argv) {
 
@@ -230,3 +230,19 @@ and prints them to the console using btree_ascend().
 void print_all_tuples(struct btree *tree) {
   btree_ascend(tree, NULL, print_iter, NULL);
 }
+
+/*
+Function: load_queries()
+Parameters: const char *filename, Query **queries, int *num_queries
+Return: Void
+
+Opens the given filename, parses each query,
+and stores reults in Query** queries.
+
+For each query:
+- Parses the SELECT attribute list into select_attrs and num_select_attrs.
+- Copies the full WHERE condition into where_raw.
+*/
+// void load_queries(const char *filename, Query **queries, int *num_queries) {
+
+// }
