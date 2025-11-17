@@ -70,36 +70,37 @@ Generates n tuples and write them to filename.
 If n <= 10, it also prints all tuples to consolse
 for easy debugging.
 */
-void generate_data(const char *filename, long n) {
-  FILE *fp;
-  long i;
-  int printToConsole = 0;
+void generate_data(const char *filename, long n) 
+{
+	FILE *fp;
+	long i;
+	int printToConsole = 0;
 
-  const char *models[] = {"Accord", "Corolla", "Civic",
+	const char *models[] = {"Accord", "Corolla", "Civic",
                           "Maxima", "Focus",   "Camry"};
-  const int numModels = 6;
 
-  const int years[] = {2000, 2013, 2015, 2016, 2018, 2020, 2021, 2023};
-  const int numYears = 8;
+	const int numModels = 6;
 
-  const char *colors[] = {"Gray", "White", "Blue", "Red", "Green", "Black"};
-  const int numColors = 6;
+	const int years[] = {2000, 2013, 2015, 2016, 2018, 2020, 2021, 2023};
+	const int numYears = 8;
 
-  const char *dealers[] = {"Pohanka", "AutoNation", "Mitsubishi",
+	const char *colors[] = {"Gray", "White", "Blue", "Red", "Green", "Black"};
+	const int numColors = 6;
+
+	const char *dealers[] = {"Pohanka", "AutoNation", "Mitsubishi",
                            "Sonic",   "Suburban",   "Atlantic",
                            "Ganley",  "Victory",    "GM"};
-  const int numDealers = 9;
+	const int numDealers = 9;
 
-  fp = fopen(filename, "w");
-  if (fp == NULL) {
-    perror("fopen");
-    exit(1);
-  }
+	fp = fopen(filename, "w");
 
-  if (n <= 10) {
-    printToConsole = 1;
-  }
+	if (fp == NULL) 
+	{
+    		perror("fopen");
+    		exit(1);
+  	}
 
+<<<<<<< HEAD
   fprintf(fp, "ID Model YearMake Color Price Dealer\n");
   if (printToConsole) {
     printf("ID Model YearMake Color Price Dealer\n");
@@ -124,6 +125,42 @@ void generate_data(const char *filename, long n) {
 }
 
 fclose(fp);
+=======
+  	if (n <= 10) 
+	{
+    		printToConsole = 1;
+  	}
+
+  	
+	fprintf(fp, "ID Model YearMake Color Price Dealer\n");
+  	if (printToConsole) 
+	{
+    		printf("ID Model YearMake Color Price Dealer\n");
+  	}
+	#pragma omp parallel 
+	{
+		int numofThreads = omp_get_num_threads();
+		int idtracker = omp_get_thread_num();
+		#pragma omp parallel for shared (idtracker, n, numofThreads) private(i) 
+				for (int i=0; i < n; i++) {
+    				int id = 1000 + idtracker;
+    				const char *model = models[rand() % numModels];
+    				int year = years[rand() % numYears];
+    				const char *color = colors[rand() % numColors];
+    				const char *dealer = dealers[rand() % numDealers];
+    				int price = random_price(model, year);	
+    				fprintf(fp, "%d %s %d %s %d %s\n",id, model, year, color, price, dealer);
+				//printf("Numer of threads %d\n", omp_get_num_threads());				
+				#pragma omp atomic
+			
+				idtracker+=numofThreads;
+    		if (printToConsole) {
+     	 	printf("Tnum=%d, %d %s %d %s %d %s\n",idtracker, id, model, year, color, price, dealer);
+    				}
+    			}
+	}
+	fclose(fp);
+>>>>>>> Dean
 }
 
 /*
