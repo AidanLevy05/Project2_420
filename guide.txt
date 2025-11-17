@@ -1,0 +1,19 @@
+# Push latest changes on aidan
+git add .
+git commit -m "update message"
+git push origin aidan
+
+# Switch to main 
+git checkout main
+
+# Make sure main is current with remote
+git pull origin main
+
+# Merge in aidan branch 
+git merge aidan
+
+# Push updates branch online 
+git push origin main
+
+# Switch to aidan
+git checkout aidan
