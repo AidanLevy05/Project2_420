@@ -26,11 +26,11 @@ The following colums are:
 
 */
 
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <omp.h>
 
 /*
 Function Prototypes
@@ -100,32 +100,6 @@ void generate_data(const char *filename, long n)
     		exit(1);
   	}
 
-<<<<<<< HEAD
-  fprintf(fp, "ID Model YearMake Color Price Dealer\n");
-  if (printToConsole) {
-    printf("ID Model YearMake Color Price Dealer\n");
-  }
-#pragma omp parallel {
-#pragma omp for {
-  for (i = 0; i < n; i++) {
-    int id = 1000 + (int)i;
-    const char *model = models[rand() % numModels];
-    int year = years[rand() % numYears];
-    const char *color = colors[rand() % numColors];
-    const char *dealer = dealers[rand() % numDealers];
-    int price = random_price(model, year);
-
-    fprintf(fp, "%d %s %d %s %d %s\n", id, model, year, color, price, dealer);
-
-    if (printToConsole) {
-      printf("%d %s %d %s %d %s\n", id, model, year, color, price, dealer);
-    }
-  }
-}
-}
-
-fclose(fp);
-=======
   	if (n <= 10) 
 	{
     		printToConsole = 1;
@@ -160,7 +134,6 @@ fclose(fp);
     			}
 	}
 	fclose(fp);
->>>>>>> Dean
 }
 
 /*
