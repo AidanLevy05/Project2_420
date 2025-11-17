@@ -75,11 +75,15 @@ void print_selected(const CarInventory *car, Query *q);
 int main(int argc, char **argv) {
 
   const char *filename = "../db/db.txt";
+  const char *queryfile = "../db/sql.txt";
   struct btree *tree;
   size_t count;
 
   if (argc >= 2) {
     filename = argv[1];
+  }
+  if (argc >= 3) {
+    queryfile = argv[2];
   }
 
   tree = load_database(filename);
@@ -96,6 +100,15 @@ int main(int argc, char **argv) {
     print_all_tuples(tree);
   }
 
+  Query *queries = NULL;
+  int num_queries = 0;
+  load_queries(queryfile, &queries, &num_queries);
+  printf("Processing %d queries from %s\n", num_queries, queryfile);
+  for (int i = 0; i < num_queries; i++) {
+    process_query(tree, &queries[i]);
+  }
+
+  free(queries);
   btree_free(tree);
 
   return 0;
@@ -504,6 +517,7 @@ static bool eval_comparison(const CarInventory *car, const char **p) {
   return false;
 }
 
+static bool eval_expr(const CarInventory *car, const char **p);
 static bool eval_factor(const CarInventory *car, const char **p);
 
 static bool eval_term(const CarInventory *car, const char **p) {
@@ -529,7 +543,8 @@ static bool eval_factor(const CarInventory *car, const char **p) {
   if (*s == '(') {
     s++;
     *p = s;
-    result = eval_term(car, p);
+    /* evaluate full expression inside parentheses */
+    result = eval_expr(car, p);
     s = skip_ws(*p);
     if (*s == ')') {
       s++;
