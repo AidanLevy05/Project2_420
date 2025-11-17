@@ -3,3 +3,18 @@ SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Civic" AND YearMak
 SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Camry" AND YearMake=2013 AND (Color="Gray" OR Color="Black");
 SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Focus" AND YearMake=2016 AND (Color="Green" OR Color="White" OR Color="Red");
 SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Maxima" AND YearMake=2018 AND (Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Sonic" AND YearMake=2015 AND (Color="Black" OR Color="Gray" OR Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="AutoNation" AND YearMake=2020 AND (Color="White" OR Color="Black");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Victory" AND YearMake=2023 AND (Color="Blue" OR Color="Green");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Accord" AND YearMake=2021 AND (Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="GM" AND YearMake=2000 AND (Color="Gray" OR Color="White" OR Color="Black" OR Color="Green");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Atlantic" AND YearMake=2016 AND (Color="Blue" OR Color="Red" OR Color="White");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Mitsubishi" AND YearMake=2023 AND (Color="Gray" OR Color="Red");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Camry" AND YearMake=2018 AND (Color="Black" OR Color="Green");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Ganley" AND YearMake=2023 AND (Color="White");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Suburban" AND YearMake=2015 AND (Color="Gray" OR Color="White" OR Color="Blue" OR Color="Red" OR Color="Green" OR Color="Black");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Victory" AND YearMake=2000 AND (Color="Blue" OR Color="Red" OR Color="Gray" OR Color="Black");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Ganley" AND YearMake=2013 AND (Color="Red" OR Color="Black");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Focus" AND YearMake=2020 AND (Color="Red" OR Color="Blue");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="Sonic" AND YearMake=2016 AND (Color="Gray" OR Color="Green" OR Color="Blue");
+SELECT ID,Model,YearMake,Color FROM CarInventory WHERE Model="GM" AND YearMake=2021 AND (Color="Blue" OR Color="Black");
