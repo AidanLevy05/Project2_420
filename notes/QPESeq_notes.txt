@@ -1,0 +1,1 @@
+These are notes for for parallelizing QPESql.c. List the function/feature you are working on so we don't double penetrate or whatever its called
