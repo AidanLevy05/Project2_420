@@ -2,11 +2,67 @@
 By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
-# Goals
-## Note: Make sure one one person is working on a single file!
-- Implement QPESeq.c
-- Implement QPEMPI.c
-- Implement QPEOMP.c
+# How to compile the programs
+
+To compile `QPESeq.c`, run this at project `/`:
+
+```{bash}
+gcc -Wall Code/QPESeq.c btree/btree.c -Ibtree -o qpe_seq
+```
+
+To compile `QPEOMP.c`, run this at project `/`:
+
+```{bash}
+gcc -fopenmp -O2 -Wall Code/QPEOMP.c btree/btree.c -Ibtree -o qpe_omp
+```
+
+To compile `QPEMPI.c`, run this at project `/`:
+
+```{bash}
+Compilation command goes here
+```
+
+# How to run the programs
+
+To run `QPESeq.c`, run this at project `/`:
+
+```{bash}
+./qpe_seq ./db/db.txt ./db/sql.txt
+```
+
+To run `QPEOMP.c`, run this at project `/`:
+
+```{bash}
+./qpe_omp ./db/db.txt ./db/sql.txt
+```
+
+To run `QPEMPI.c`, run this at project `/`:
+
+```{bash}
+./qpe_mpi ./db/db.txt ./db/sql.txt
+```
+
+# How to confirm outputs are the same
+
+In order to confirm that the outputs are the same, we do not
+want to go through and manually confirm outputs. So this bash
+program does it. 
+
+You need to enter a minimum of two files and it compares
+the output of the files and sees if the text matches,
+regardless of order.
+
+To run `confirm.sh`, run this at project `/`:
+
+```{bash}
+./confirm.sh <program1> <program2> [program3 ...]
+```
+
+Example usage:
+
+```{bash}
+./confirm.sh ./qpe_seq ./qpe_omp
+```
 
 # TODO
 - Dean: 
