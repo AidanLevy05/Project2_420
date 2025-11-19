@@ -225,7 +225,7 @@ Returns true to continue iteration.
 bool print_iter(const void *item, void *udata) {
   const CarInventory *car = (const CarInventory *)item;
 
-  (void)udata; /* unused */
+  (void)udata;
 
   printf("%d %s %d %s %d %s\n", car->ID, car->Model, car->YearMake, car->Color,
          car->Price, car->Dealer);
