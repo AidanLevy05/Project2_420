@@ -83,6 +83,13 @@ int main(int argc, char **argv) {
     load_queries(queryfile, &queries, &num_queries);
     printf("Processing %d queries from %s\n", num_queries, queryfile);
 
+    /*
+    
+    Parallel section: #pragma omp parallel for default(none) shared(tree, quieries, num_queries)
+
+    Parallelizing the process_query function so different threads process different queries
+    
+    */
     #pragma omp parallel for default(none) shared(tree, queries, num_queries)
     for (int i = 0; i < num_queries; i++) {
         process_query(tree, &queries[i]);
@@ -397,6 +404,15 @@ int match_where(const CarInventory *car, const char *where_raw) {
 }
 
 void print_selected(const CarInventory *car, Query *q) {
+    /*
+    
+    Parallel Section: #pragma omp critical(print_lock)
+
+    This section parallelizing the printing. It will be out of order
+    (compared to the sequential portion), but that does not matter
+    since the results are the same.
+    
+    */
     #pragma omp critical(print_lock)
     {
         if (q->num_select_attrs == 0 ||
@@ -427,6 +443,14 @@ void process_query(struct btree *tree, Query *q) {
     CarInventory *arr = btree_to_array(tree, &count);
     if (!arr || count == 0) return;
 
+    /*
+    
+    Parallel Section: #pragma omp parallel for schedule(dynamic)
+
+    Parallelizes the for loop and distributes the iterations 
+    among multiple threads
+    
+    */
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < count; i++) {
         if (match_where(&arr[i], q->where_raw)) {
