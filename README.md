@@ -64,6 +64,23 @@ Example usage:
 ./confirm.sh ./qpe_seq ./qpe_omp
 ```
 
+# How to generate data into `db.txt`
+
+You have two choices- you can use `dataGen.c` or `dataGenParallel.c`.
+
+To compile and run `dataGen.c`:
+
+```{bash}
+gcc -o dataGen dataGen.c
+./dataGen <n>
+```
+
+To compile and run `dataGenParallel.c`:
+
+```{bash}
+gcc -fopenmp dataGenParallel.c -o dataGenParallel
+```
+
 # TODO
 - Dean: 
 	- ~~Implement dataGenParallel.c~~
