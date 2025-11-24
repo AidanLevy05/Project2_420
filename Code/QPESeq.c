@@ -33,12 +33,13 @@ for easy debugging.
 
 */
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <strings.h>
+#include <time.h>
 
 #include "../btree/btree.h"
 
@@ -74,6 +75,8 @@ void print_selected(const CarInventory *car, Query *q);
 
 int main(int argc, char **argv) {
 
+  clock_t start, end;
+  double total;
   const char *filename = "../db/db.txt";
   const char *queryfile = "../db/sql.txt";
   struct btree *tree;
@@ -104,12 +107,18 @@ int main(int argc, char **argv) {
   int num_queries = 0;
   load_queries(queryfile, &queries, &num_queries);
   printf("Processing %d queries from %s\n", num_queries, queryfile);
+  start = clock();
   for (int i = 0; i < num_queries; i++) {
     process_query(tree, &queries[i]);
   }
+  end = clock();
+  total = (double)(end - start) / CLOCKS_PER_SEC;
 
   free(queries);
   btree_free(tree);
+
+  printf("\nTiming Summary (sequential):\n");
+  printf("  Total time: %.6f seconds\n", total);
 
   return 0;
 }
@@ -439,8 +448,10 @@ static int compare_attr_value(const CarInventory *car, const char *attr,
       lhs = car->Price;
     }
     int rhs = (v->type == VAL_INT) ? v->i : atoi(v->s);
-    if (lhs < rhs) return -1;
-    if (lhs > rhs) return 1;
+    if (lhs < rhs)
+      return -1;
+    if (lhs > rhs)
+      return 1;
     return 0;
   }
 

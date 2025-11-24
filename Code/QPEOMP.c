@@ -56,6 +56,11 @@ CarInventory *btree_to_array(struct btree *tree, size_t *out_count) {
 }
 
 int main(int argc, char **argv) {
+    double total_start = omp_get_wtime();
+    double serial_time = 0.0;
+    double parallel_time = 0.0;
+    double section_start = omp_get_wtime();
+
     const char *filename = "../db/db.txt";
     const char *queryfile = "../db/sql.txt";
     struct btree *tree;
@@ -83,6 +88,8 @@ int main(int argc, char **argv) {
     load_queries(queryfile, &queries, &num_queries);
     printf("Processing %d queries from %s\n", num_queries, queryfile);
 
+    serial_time += omp_get_wtime() - section_start;
+
     /*
     
     Parallel section: #pragma omp parallel for default(none) shared(tree, quieries, num_queries)
@@ -90,13 +97,33 @@ int main(int argc, char **argv) {
     Parallelizing the process_query function so different threads process different queries
     
     */
+    double parallel_start = omp_get_wtime();
     #pragma omp parallel for default(none) shared(tree, queries, num_queries)
     for (int i = 0; i < num_queries; i++) {
         process_query(tree, &queries[i]);
     }
+    parallel_time += omp_get_wtime() - parallel_start;
 
+    section_start = omp_get_wtime();
     free(queries);
     btree_free(tree);
+    double section_end = omp_get_wtime();
+    serial_time += section_end - section_start;
+
+    double total_time = section_end - total_start;
+    if (total_time < 0.0) total_time = 0.0;
+    double parallel_percentage = (total_time > 0.0) ? (parallel_time / total_time) * 100.0 : 0.0;
+    double serial_percentage = (total_time > 0.0) ? (serial_time / total_time) * 100.0 : 0.0;
+    double tspeedup = (parallel_time > 0.0) ? serial_time / parallel_time : 0.0;
+
+    printf("\nTiming summary (omp_get_wtime):\n");
+    printf("  Total time: %.6f seconds\n", total_time);
+    printf("  Parallel time: %.6f seconds\n", parallel_time);
+    printf("  Serial time: %.6f seconds\n", serial_time);
+    printf("  Parallel percentage: %.2f%%\n", parallel_percentage);
+    printf("  Serial percentage: %.2f%%\n", serial_percentage);
+    printf("  Tspeedup (serial/parallel): %.6f\n", tspeedup);
+
     return 0;
 }
 
