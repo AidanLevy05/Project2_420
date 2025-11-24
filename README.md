@@ -79,6 +79,7 @@ To compile and run `dataGenParallel.c`:
 
 ```{bash}
 gcc -fopenmp dataGenParallel.c -o dataGenParallel
+./dataGenParallel <n>
 ```
 
 # TODO
