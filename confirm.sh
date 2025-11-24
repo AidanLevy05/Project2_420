@@ -48,6 +48,7 @@ done
 
 if [ "$PASS" = true ]; then
     echo "SUCCESS: All programs produced identical results (order-independent)."
+    rm out*.txt sorted*.txt filtered*.txt
 else
     echo "ERROR: Outputs did NOT match."
 fi
