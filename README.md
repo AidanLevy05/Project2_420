@@ -19,7 +19,7 @@ gcc -fopenmp -O2 -Wall Code/QPEOMP.c btree/btree.c -Ibtree -o qpe_omp
 To compile `QPEMPI.c`, run this at project `/`:
 
 ```{bash}
-Compilation command goes here
+mpicc -Wall -Wextra -g Code/QPEMPI.c btree/btree.c -Ibtree -o qpe_mpi
 ```
 
 # How to run the programs
@@ -39,7 +39,7 @@ To run `QPEOMP.c`, run this at project `/`:
 To run `QPEMPI.c`, run this at project `/`:
 
 ```{bash}
-./qpe_mpi ./db/db.txt ./db/sql.txt
+./qpe_mpi [-np <n>] ./db/db.txt ./db/sql.txt
 ```
 
 # How to confirm outputs are the same
