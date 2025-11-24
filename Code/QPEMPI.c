@@ -57,8 +57,8 @@ static bool buffer_append(Buffer *buf, const char *data, size_t len);
 static bool buffer_appendf(Buffer *buf, const char *fmt, ...);
 static void bcast_bytes(void *data, size_t bytes, int root, MPI_Comm comm);
 static CarInventory *btree_to_array(struct btree *tree, size_t *out_count);
-static void compute_bounds(long long total, int size, int rank, long long *start,
-                           long long *end);
+static void compute_bounds(long long total, int size, int rank,
+                           long long *start, long long *end);
 static bool append_selected(const CarInventory *car, const Query *q,
                             Buffer *buf);
 
@@ -135,8 +135,8 @@ static void bcast_bytes(void *data, size_t bytes, int root, MPI_Comm comm) {
   }
 }
 
-static void compute_bounds(long long total, int size, int rank, long long *start,
-                           long long *end) {
+static void compute_bounds(long long total, int size, int rank,
+                           long long *start, long long *end) {
   if (total <= 0 || size <= 0) {
     *start = 0;
     *end = 0;
@@ -181,7 +181,7 @@ static CarInventory *btree_to_array(struct btree *tree, size_t *out_count) {
 }
 
 /*
-Main MPI driver
+Main function
 */
 int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
@@ -354,7 +354,7 @@ int main(int argc, char **argv) {
 }
 
 /*
-Comparison and database loading utilities (same as sequential version)
+Comparison and database loading utilities
 */
 int car_compare(const void *a, const void *b, void *udata) {
   (void)udata;
@@ -427,7 +427,7 @@ void print_all_tuples(struct btree *tree) {
 }
 
 /*
-Query parsing helpers (same as sequential version)
+Query parsing helpers
 */
 static const char *skip_ws(const char *s) {
   while (*s && isspace((unsigned char)*s)) {

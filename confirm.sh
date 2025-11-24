@@ -15,13 +15,17 @@ PROGRAMS=("$@")
 i=0
 for PROG in "${PROGRAMS[@]}"; do
     OUT="out_$i.txt"
+    FILTERED="filtered_$i.txt"
     SORTED="sorted_$i.txt"
 
     echo "Running: $PROG"
 
     "$PROG" "$DB" "$SQL" > "$OUT"
 
-    sort "$OUT" > "$SORTED"
+    # Keep only the query results; drop trailing timing summary sections.
+    awk '/[Tt]iming[[:space:]][Ss]ummary/ {exit} {print}' "$OUT" > "$FILTERED"
+
+    sort "$FILTERED" > "$SORTED"
 
     SORTED_OUTPUTS[$i]="$SORTED"
     ((i++))
