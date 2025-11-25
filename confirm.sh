@@ -22,7 +22,6 @@ for PROG in "${PROGRAMS[@]}"; do
 
     "$PROG" "$DB" "$SQL" > "$OUT"
 
-    # Keep only the query results; drop trailing timing summary sections.
     awk '/[Tt]iming[[:space:]][Ss]ummary/ {exit} {print}' "$OUT" > "$FILTERED"
 
     sort "$FILTERED" > "$SORTED"
