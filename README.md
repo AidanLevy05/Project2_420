@@ -2,6 +2,8 @@
 By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
+---
+
 # How to use `make`
 
 To compile all 3 files: `QPESeq.c`, `QPEMPI.c` and `QPEOMP.c`, run this as project `/`:
@@ -32,6 +34,8 @@ To compile `QPEMPI.c`, run this at project `/`:
 mpicc -Wall -Wextra -g Code/QPEMPI.c btree/btree.c -Ibtree -o qpe_mpi
 ```
 
+---
+
 # How to run the programs
 
 To run `QPESeq.c`, run this at project `/`:
@@ -51,6 +55,8 @@ To run `QPEMPI.c`, run this at project `/`:
 ```{bash}
 ./qpe_mpi [-np <n>] ./db/db.txt ./db/sql.txt
 ```
+
+---
 
 # How to confirm outputs are the same
 
@@ -74,6 +80,8 @@ Example usage:
 ./confirm.sh ./qpe_seq ./qpe_omp
 ```
 
+---
+
 # How to generate data into `db.txt`
 
 You have two choices- you can use `dataGen.c` or `dataGenParallel.c`.
@@ -91,6 +99,8 @@ To compile and run `dataGenParallel.c`:
 gcc -fopenmp dataGenParallel.c -o dataGenParallel
 ./dataGenParallel <n>
 ```
+
+---
 
 # TODO
 - Dean: 
