@@ -2,7 +2,15 @@
 By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
-# How to compile the programs
+# How to compile the 
+
+To compile all 3 files: `QPESeq.c`, `QPEMPI.c` and `QPEOMP.c`, run this as project `/`:
+
+```{bash}
+make
+```
+
+If you prefer to compile each one individually, then:
 
 To compile `QPESeq.c`, run this at project `/`:
 
