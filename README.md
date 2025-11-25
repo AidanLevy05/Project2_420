@@ -2,13 +2,15 @@
 By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
-# How to compile the 
+# How to use `make`
 
 To compile all 3 files: `QPESeq.c`, `QPEMPI.c` and `QPEOMP.c`, run this as project `/`:
 
 ```{bash}
 make
 ```
+
+# How to compile files individually
 
 If you prefer to compile each one individually, then:
 
