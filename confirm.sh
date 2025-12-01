@@ -20,7 +20,14 @@ for PROG in "${PROGRAMS[@]}"; do
 
     echo "Running: $PROG"
 
-    "$PROG" "$DB" "$SQL" > "$OUT"
+    CMD=("$PROG" "$DB" "$SQL")
+    if [[ $(basename "$PROG") == "qpe_mpi" ]]; then
+        NP=${MPI_NP:-4}
+        CMD=(mpirun -np "$NP" "$PROG" "$DB" "$SQL")
+        echo "  (using mpirun with -np $NP)"
+    fi
+
+    "${CMD[@]}" > "$OUT"
 
     awk '/[Tt]iming[[:space:]][Ss]ummary/ {exit} {print}' "$OUT" > "$FILTERED"
 
