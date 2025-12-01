@@ -96,7 +96,7 @@ gcc -fopenmp dataGenParallel.c -o dataGenParallel
 	- Implemented QPEMPI.c
 - Austin: 
 	- Read and understand BTree Documentation
-	- Implemented QPEMPI.c
+	- ~~Implemented QPEMPI.c~~
 - Aidan: 
 	- Read and understand BTree Documentation
 	- ~~Implemented QPEOMP.c~~
