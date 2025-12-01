@@ -1,3 +1,6 @@
 btree/*
 howTo*
 db/*
+qpe_seq
+qpe_omp
+qpe_mpi

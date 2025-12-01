@@ -41,6 +41,11 @@ typedef struct {
   size_t cap;
 } Buffer;
 
+enum {
+  TAG_RECORD_COUNT = 1,
+  TAG_RECORD_DATA = 2,
+};
+
 /*
 Function prototypes
 */
@@ -56,6 +61,10 @@ static void buffer_free(Buffer *buf);
 static bool buffer_append(Buffer *buf, const char *data, size_t len);
 static bool buffer_appendf(Buffer *buf, const char *fmt, ...);
 static void bcast_bytes(void *data, size_t bytes, int root, MPI_Comm comm);
+static void send_bytes(const void *data, size_t bytes, int dest, int tag,
+                       MPI_Comm comm);
+static void recv_bytes(void *data, size_t bytes, int src, int tag,
+                       MPI_Comm comm);
 static CarInventory *btree_to_array(struct btree *tree, size_t *out_count);
 static void compute_bounds(long long total, int size, int rank,
                            long long *start, long long *end);
@@ -131,6 +140,30 @@ static void bcast_bytes(void *data, size_t bytes, int root, MPI_Comm comm) {
     size_t remaining = bytes - offset;
     int chunk = remaining > (size_t)INT_MAX ? INT_MAX : (int)remaining;
     MPI_Bcast(ptr + offset, chunk, MPI_BYTE, root, comm);
+    offset += (size_t)chunk;
+  }
+}
+
+static void send_bytes(const void *data, size_t bytes, int dest, int tag,
+                       MPI_Comm comm) {
+  size_t offset = 0;
+  const char *ptr = (const char *)data;
+  while (offset < bytes) {
+    size_t remaining = bytes - offset;
+    int chunk = remaining > (size_t)INT_MAX ? INT_MAX : (int)remaining;
+    MPI_Send(ptr + offset, chunk, MPI_BYTE, dest, tag, comm);
+    offset += (size_t)chunk;
+  }
+}
+
+static void recv_bytes(void *data, size_t bytes, int src, int tag,
+                       MPI_Comm comm) {
+  size_t offset = 0;
+  char *ptr = (char *)data;
+  while (offset < bytes) {
+    size_t remaining = bytes - offset;
+    int chunk = remaining > (size_t)INT_MAX ? INT_MAX : (int)remaining;
+    MPI_Recv(ptr + offset, chunk, MPI_BYTE, src, tag, comm, MPI_STATUS_IGNORE);
     offset += (size_t)chunk;
   }
 }
@@ -243,18 +276,57 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (world_rank != 0 && record_count_ll > 0) {
-    records = malloc((size_t)record_count_ll * sizeof(CarInventory));
-    if (!records) {
-      fprintf(stderr, "Rank %d: out of memory allocating records buffer\n",
-              world_rank);
-      MPI_Abort(MPI_COMM_WORLD, 1);
+  long long local_start = 0;
+  long long local_end = 0;
+  compute_bounds(record_count_ll, world_size, world_rank, &local_start,
+                 &local_end);
+  long long local_count_ll = local_end - local_start;
+
+  CarInventory *local_records = NULL;
+  bool owns_local_records = false;
+
+  if (record_count_ll > 0) {
+    if (world_rank == 0) {
+      if (local_count_ll > 0) {
+        local_records = records + local_start;
+      }
+      for (int dest = 1; dest < world_size; ++dest) {
+        long long dest_start = 0;
+        long long dest_end = 0;
+        compute_bounds(record_count_ll, world_size, dest, &dest_start,
+                       &dest_end);
+        long long dest_count = dest_end - dest_start;
+        MPI_Send(&dest_count, 1, MPI_LONG_LONG, dest, TAG_RECORD_COUNT,
+                 MPI_COMM_WORLD);
+        if (dest_count > 0) {
+          size_t bytes = (size_t)dest_count * sizeof(CarInventory);
+          send_bytes(records + dest_start, bytes, dest, TAG_RECORD_DATA,
+                     MPI_COMM_WORLD);
+        }
+      }
+    } else {
+      MPI_Recv(&local_count_ll, 1, MPI_LONG_LONG, 0, TAG_RECORD_COUNT,
+               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      if (local_count_ll > 0) {
+        size_t alloc_bytes = (size_t)local_count_ll * sizeof(CarInventory);
+        local_records = (CarInventory *)malloc(alloc_bytes);
+        if (!local_records) {
+          fprintf(stderr,
+                  "Rank %d: out of memory allocating %lld local records\n",
+                  world_rank, local_count_ll);
+          MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+        recv_bytes(local_records, alloc_bytes, 0, TAG_RECORD_DATA,
+                   MPI_COMM_WORLD);
+        owns_local_records = true;
+      }
     }
   }
 
-  if (record_count_ll > 0) {
-    bcast_bytes(records, (size_t)record_count_ll * sizeof(CarInventory), 0,
-                MPI_COMM_WORLD);
+  if (local_count_ll > 0 && !local_records) {
+    fprintf(stderr, "Rank %d: missing local data buffer for %lld records\n",
+            world_rank, local_count_ll);
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
 
   MPI_Bcast(&num_queries, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -274,19 +346,15 @@ int main(int argc, char **argv) {
 
   double setup_end = MPI_Wtime();
 
-  long long start_idx = 0;
-  long long end_idx = 0;
-  compute_bounds(record_count_ll, world_size, world_rank, &start_idx, &end_idx);
-
   double query_start = MPI_Wtime();
   for (int qi = 0; qi < num_queries; ++qi) {
     Buffer local_buf;
     buffer_init(&local_buf);
     const Query *q = &queries[qi];
 
-    for (long long idx = start_idx; idx < end_idx; ++idx) {
-      if (match_where(&records[idx], q->where_raw)) {
-        if (!append_selected(&records[idx], q, &local_buf)) {
+    for (long long idx = 0; idx < local_count_ll; ++idx) {
+      if (local_records && match_where(&local_records[idx], q->where_raw)) {
+        if (!append_selected(&local_records[idx], q, &local_buf)) {
           fprintf(stderr, "Rank %d: Failed to append query result\n",
                   world_rank);
           MPI_Abort(MPI_COMM_WORLD, 1);
@@ -347,7 +415,12 @@ int main(int argc, char **argv) {
   } else if (queries) {
     free(queries);
   }
-  free(records);
+  if (owns_local_records && local_records) {
+    free(local_records);
+  }
+  if (world_rank == 0) {
+    free(records);
+  }
 
   MPI_Finalize();
   return 0;

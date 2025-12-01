@@ -2,7 +2,19 @@
 By: Aidan James. L, Austin P, Dean B, Maddie P, Nicholas C
 For: COSC 420 - Dr. Yaping Jing
 
-# How to compile the programs
+---
+
+# How to use `make`
+
+To compile all 3 files: `QPESeq.c`, `QPEMPI.c` and `QPEOMP.c`, run this as project `/`:
+
+```{bash}
+make
+```
+
+# How to compile files individually
+
+If you prefer to compile each one individually, then:
 
 To compile `QPESeq.c`, run this at project `/`:
 
@@ -21,6 +33,8 @@ To compile `QPEMPI.c`, run this at project `/`:
 ```{bash}
 mpicc -Wall -Wextra -g Code/QPEMPI.c btree/btree.c -Ibtree -o qpe_mpi
 ```
+
+---
 
 # How to run the programs
 
@@ -41,6 +55,8 @@ To run `QPEMPI.c`, run this at project `/`:
 ```{bash}
 ./qpe_mpi [-np <n>] ./db/db.txt ./db/sql.txt
 ```
+
+---
 
 # How to confirm outputs are the same
 
@@ -64,6 +80,8 @@ Example usage:
 ./confirm.sh ./qpe_seq ./qpe_omp
 ```
 
+---
+
 # How to generate data into `db.txt`
 
 You have two choices- you can use `dataGen.c` or `dataGenParallel.c`.
@@ -82,22 +100,25 @@ gcc -fopenmp dataGenParallel.c -o dataGenParallel
 ./dataGenParallel <n>
 ```
 
+---
+
 # TODO
 - Dean: 
 	- ~~Implement dataGenParallel.c~~
-	- Start working QPESeq.c -- Do not overwrite with Nick -- Clearly communicate when adding features to QPESeq.c
+	- ~~Start working QPESeq.c -- Do not overwrite with Nick -- Clearly communicate when adding features to QPESeq.c~~
 	- ~~Implemented QPEMPI.c~~
 - Maddie: 
-	- Create 20 test cases for sql.txt
-	- Implemented QPEOMP.c
+	- ~~Create 20 test cases for sql.txt~~
+	- ~~Implemented QPEOMP.c~~
 - Nick: 
-	- Read and understand BTree Documentation
-	- Start working QPESeq.c -- Do not overwrite with Dean -- Clearly communicate when adding features to QPESeq.c
+	- ~~Read and understand BTree Documentation~~
+	- ~~Start working QPESeq.c -- Do not overwrite with Dean -- Clearly communicate when adding features to QPESeq.c~~
 	- Implemented QPEMPI.c
 - Austin: 
-	- Read and understand BTree Documentation
-	- ~~Implemented QPEMPI.c~~
+	- ~~Read and understand BTree Documentation~~
+	- Implemented QPEMPI.c
 - Aidan: 
-	- Read and understand BTree Documentation
+	- ~~Read and understand BTree Documentation~~
 	- ~~Implemented QPEOMP.c~~
-	- Wrote confirm.sh 
+	- ~~Wrote confirm.sh~~
+	- ~~Update confirm.sh~~
