@@ -104,34 +104,52 @@ void generate_data(const char *filename, long n)
 	{
     		printToConsole = 1;
   	}
-
   	
-	fprintf(fp, "ID Model YearMake Color Price Dealer\n");
+	
   	if (printToConsole) 
 	{
     		printf("ID Model YearMake Color Price Dealer\n");
   	}
+	
 	#pragma omp parallel 
 	{
+		int run=1;
+		int endNum=n/omp_get_num_threads();
+			
+		if (n<omp_get_num_threads())
+		{	
+			if (n<omp_get_thread_num()+1)
+			{
+				run=0;
+			}
+			endNum=1;
+		}
+		else
+		{
+			if (n%omp_get_num_threads() > omp_get_thread_num())
+				endNum++;
+		}
 		int numofThreads = omp_get_num_threads();
 		int idtracker = omp_get_thread_num();
-		#pragma omp parallel for shared (idtracker, n, numofThreads) private(i) 
-				for (int i=0; i < n; i++) {
+		 
+		if (run==1)
+		{
+		#pragma omp parallel for shared (i, idtracker, n, numofThreads) 
+				for (int i=0; i < endNum; i++) {
     				int id = 1000 + idtracker;
     				const char *model = models[rand() % numModels];
     				int year = years[rand() % numYears];
     				const char *color = colors[rand() % numColors];
     				const char *dealer = dealers[rand() % numDealers];
     				int price = random_price(model, year);	
-    				fprintf(fp, "%d %s %d %s %d %s\n",id, model, year, color, price, dealer);
-				//printf("Numer of threads %d\n", omp_get_num_threads());				
+    				fprintf(fp, "%d %s %d %s %d %s\n",id, model, year, color, price, dealer);					
 				#pragma omp atomic
-			
 				idtracker+=numofThreads;
     		if (printToConsole) {
      	 	printf("Tnum=%d, %d %s %d %s %d %s\n",idtracker, id, model, year, color, price, dealer);
     				}
     			}
+		}
 	}
 	fclose(fp);
 }
