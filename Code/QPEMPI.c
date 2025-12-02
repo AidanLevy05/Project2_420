@@ -218,7 +218,7 @@ Main function
 */
 int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
-
+  double startTime = MPI_Wtime();
   int world_rank = 0;
   int world_size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -421,7 +421,8 @@ int main(int argc, char **argv) {
   if (world_rank == 0) {
     free(records);
   }
-
+  double endTime= MPI_Wtime();
+  printf("Time: %.6f", endTime-startTime);
   MPI_Finalize();
   return 0;
 }
