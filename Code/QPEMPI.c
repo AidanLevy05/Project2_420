@@ -830,7 +830,7 @@ static bool append_selected(const CarInventory *car, const Query *q,
 
   for (int i = 0; i < q->num_select_attrs; ++i) {
     if (i > 0 && !buffer_append(buf, " ", 1)) {
-      return false;
+ CLOCKS_PER_SEC     return false;
     }
     const char *attr = q->select_attrs[i];
     if (strcasecmp(attr, "ID") == 0) {
@@ -860,4 +860,4 @@ static bool append_selected(const CarInventory *car, const Query *q,
     }
   }
   return buffer_append(buf, "\n", 1);
-}
+}CLOCKS_PER_SEC

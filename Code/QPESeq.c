@@ -33,11 +33,11 @@ for easy debugging.
 
 */
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <strings.h>
 #include <time.h>
 
@@ -75,8 +75,7 @@ void print_selected(const CarInventory *car, Query *q);
 
 int main(int argc, char **argv) {
 
-  clock_t start, end;
-  double total;
+  clock_t startTime = clock();
   const char *filename = "../db/db.txt";
   const char *queryfile = "../db/sql.txt";
   struct btree *tree;
@@ -107,18 +106,16 @@ int main(int argc, char **argv) {
   int num_queries = 0;
   load_queries(queryfile, &queries, &num_queries);
   printf("Processing %d queries from %s\n", num_queries, queryfile);
-  start = clock();
   for (int i = 0; i < num_queries; i++) {
     process_query(tree, &queries[i]);
   }
-  end = clock();
-  total = (double)(end - start) / CLOCKS_PER_SEC;
 
   free(queries);
   btree_free(tree);
+  clock_t endTime = clock();
+  double elapsed_seconds = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+  printf("Function execution time: %f seconds\n", elapsed_seconds);
 
-  printf("\nTiming Summary (sequential):\n");
-  printf("  Total time: %.6f seconds\n", total);
 
   return 0;
 }
@@ -234,7 +231,7 @@ Returns true to continue iteration.
 bool print_iter(const void *item, void *udata) {
   const CarInventory *car = (const CarInventory *)item;
 
-  (void)udata;
+  (void)udata; /* unused */
 
   printf("%d %s %d %s %d %s\n", car->ID, car->Model, car->YearMake, car->Color,
          car->Price, car->Dealer);
@@ -319,6 +316,15 @@ void load_queries(const char *filename, Query **queries, int *num_queries) {
     int idx = 0;
 
     if (line[0] == '\n' || line[0] == '\0') {
+      continue;
+    }
+
+    memset(&q, 0, sizeof(Query));
+
+    select_pos = strstr(line, "SELECT");
+    from_pos = strstr(line, "FROM");
+    where_pos = strstr(line, "WHERE");
+
       continue;
     }
 
@@ -635,11 +641,3 @@ static bool process_iter_cb(const void *item, void *udata) {
   ProcessCtx *ctx = (ProcessCtx *)udata;
   if (match_where(car, ctx->q->where_raw)) {
     print_selected(car, ctx->q);
-  }
-  return true;
-}
-
-void process_query(struct btree *tree, Query *q) {
-  ProcessCtx ctx = {.q = q};
-  btree_ascend(tree, NULL, process_iter_cb, &ctx);
-}
