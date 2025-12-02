@@ -1,5 +1,5 @@
 CC := gcc
-MPICC := /usr/lib64/openmpi/bin/mpicc
+MPICC := /usr/bin/mpicc
 BTREE_SRC := btree/btree.c
 BTREE_INC := -Ibtree
 
