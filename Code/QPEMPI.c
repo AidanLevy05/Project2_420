@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <time.h>
 
 #include "../btree/btree.h"
 
@@ -218,16 +219,14 @@ Main function
 */
 int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
-  double startTime = MPI_Wtime();
+  clock_t startTime = clock();
   int world_rank = 0;
   int world_size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  double program_start = MPI_Wtime();
-
-  const char *filename = "../db/db.txt";
-  const char *queryfile = "../db/sql.txt";
+  const char *filename = "db/db.txt";
+  const char *queryfile = "db/sql.txt";
   if (argc >= 2) {
     filename = argv[1];
   }
@@ -344,9 +343,6 @@ int main(int argc, char **argv) {
                 MPI_COMM_WORLD);
   }
 
-  double setup_end = MPI_Wtime();
-
-  double query_start = MPI_Wtime();
   for (int qi = 0; qi < num_queries; ++qi) {
     Buffer local_buf;
     buffer_init(&local_buf);
@@ -373,40 +369,14 @@ int main(int argc, char **argv) {
 
     buffer_free(&local_buf);
   }
-  double query_end = MPI_Wtime();
-
-  double setup_time = setup_end - program_start;
-  double query_time = query_end - query_start;
-  double total_time = query_end - program_start;
-
-  double max_setup = 0.0;
-  double max_query = 0.0;
-  double max_total = 0.0;
-  MPI_Reduce(&setup_time, &max_setup, 1, MPI_DOUBLE, MPI_MAX, 0,
-             MPI_COMM_WORLD);
-  MPI_Reduce(&query_time, &max_query, 1, MPI_DOUBLE, MPI_MAX, 0,
-             MPI_COMM_WORLD);
-  MPI_Reduce(&total_time, &max_total, 1, MPI_DOUBLE, MPI_MAX, 0,
-             MPI_COMM_WORLD);
-
-  double parallel_percentage = 0.0;
-  double serial_percentage = 0.0;
-  double tspeedup = 0.0;
 
   if (world_rank == 0) {
-    if (max_total > 0.0) {
-      parallel_percentage = (max_query / max_total) * 100.0;
-      serial_percentage = (max_setup / max_total) * 100.0;
-    }
-    tspeedup = (max_query > 0.0) ? max_setup / max_query : 0.0;
+    clock_t end = clock();
+    double time = (double)(end - startTime) / CLOCKS_PER_SEC;
 
     printf("\nTiming summary (MPI_Wtime, max across ranks):\n");
-    printf("  Total time: %.6f seconds\n", max_total);
-    printf("  Parallel time: %.6f seconds\n", max_query);
-    printf("  Serial time: %.6f seconds\n", max_setup);
-    printf("  Parallel percentage: %.2f%%\n", parallel_percentage);
-    printf("  Serial percentage: %.2f%%\n", serial_percentage);
-    printf("  Tspeedup (serial/parallel): %.6f\n", tspeedup);
+    printf("  Total time: %.6f seconds\n", time);
+    printf("  Number of processors: %d\n", world_size);
   }
 
   if (world_rank == 0) {
@@ -421,8 +391,6 @@ int main(int argc, char **argv) {
   if (world_rank == 0) {
     free(records);
   }
-  double endTime= MPI_Wtime();
-  printf("Time: %.6f", endTime-startTime);
   MPI_Finalize();
   return 0;
 }
@@ -831,7 +799,7 @@ static bool append_selected(const CarInventory *car, const Query *q,
 
   for (int i = 0; i < q->num_select_attrs; ++i) {
     if (i > 0 && !buffer_append(buf, " ", 1)) {
- CLOCKS_PER_SEC     return false;
+      return false;
     }
     const char *attr = q->select_attrs[i];
     if (strcasecmp(attr, "ID") == 0) {
@@ -861,4 +829,4 @@ static bool append_selected(const CarInventory *car, const Query *q,
     }
   }
   return buffer_append(buf, "\n", 1);
-}CLOCKS_PER_SEC
+}
