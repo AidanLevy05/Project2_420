@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
 
   clock_t start = clock(), end;
   double total;
-  const char *filename = "../db/db.txt";
-  const char *queryfile = "../db/sql.txt";
+  const char *filename = "db/db.txt";
+  const char *queryfile = "db/sql.txt";
   struct btree *tree;
   size_t count;
 
