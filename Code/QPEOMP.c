@@ -59,8 +59,8 @@ CarInventory *btree_to_array(struct btree *tree, size_t *out_count) {
 int main(int argc, char **argv) {
   double par_start = omp_get_wtime();
 
-  const char *filename = "../db/db.txt";
-  const char *queryfile = "../db/sql.txt";
+  const char *filename = "db/db.txt";
+  const char *queryfile = "db/sql.txt";
   struct btree *tree;
   size_t count;
   int thread_num = atoi(argv[3]);
