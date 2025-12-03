@@ -75,7 +75,7 @@ void print_selected(const CarInventory *car, Query *q);
 
 int main(int argc, char **argv) {
 
-  clock_t start, end;
+  clock_t start = clock(), end;
   double total;
   const char *filename = "../db/db.txt";
   const char *queryfile = "../db/sql.txt";
@@ -107,7 +107,6 @@ int main(int argc, char **argv) {
   int num_queries = 0;
   load_queries(queryfile, &queries, &num_queries);
   printf("Processing %d queries from %s\n", num_queries, queryfile);
-  start = clock();
   for (int i = 0; i < num_queries; i++) {
     process_query(tree, &queries[i]);
   }
