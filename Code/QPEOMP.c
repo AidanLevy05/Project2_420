@@ -63,8 +63,10 @@ int main(int argc, char **argv) {
   const char *queryfile = "db/sql.txt";
   struct btree *tree;
   size_t count;
+
   int thread_num = atoi(argv[3]);
   omp_set_num_threads(thread_num);
+
   if (argc >= 2)
     filename = argv[1];
   if (argc >= 3)
