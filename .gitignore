@@ -4,3 +4,4 @@ db/*
 qpe_seq
 qpe_omp
 qpe_mpi
+db/db.txt
