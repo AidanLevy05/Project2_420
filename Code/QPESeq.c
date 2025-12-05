@@ -61,18 +61,50 @@ typedef struct {
   char where_raw[256];
 } Query;
 
+typedef enum { VAL_INT, VAL_STR } ValueType;
+
+typedef struct {
+  ValueType type;
+  int i;
+  char s[64];
+} Value;
+
+typedef struct {
+  Query *q;
+} ProcessCtx;
+
 /*
 Function Prototypes
 */
 int car_compare(const void *a, const void *b, void *udata);
 struct btree *load_database(const char *filename);
-void print_all_tuples(struct btree *tree);
 bool print_iter(const void *item, void *udata);
+void print_all_tuples(struct btree *tree);
+static const char *skip_ws(const char *s);
+static void trim_trailing(char *s);
 void load_queries(const char *filename, Query **queries, int *num_queries);
-void process_query(struct btree *tree, Query *q);
+static bool read_identifier(const char **p, char *out, size_t cap);
+static bool read_value(const char **p, Value *v);
+static int compare_attr_value(const CarInventory *car, const char *attr,
+                              const Value *v);
+static bool eval_comparison(const CarInventory *car, const char **p);
+static bool eval_term(const CarInventory *car, const char **p);
+static bool eval_factor(const CarInventory *car, const char **p);
+static bool eval_expr(const CarInventory *car, const char **p);
 int match_where(const CarInventory *car, const char *where_raw);
 void print_selected(const CarInventory *car, Query *q);
+static bool process_iter_cb(const void *item, void *udata);
+void process_query(struct btree *tree, Query *q);
 
+/*
+Name: main():
+Parameters: int argc, char **argv
+Return: int
+Description:
+
+Sequential entry point that loads the database, parses queries, and processes
+them against the B-tree while recording total runtime for reporting.
+*/
 int main(int argc, char **argv) {
 
   clock_t start = clock(), end;
@@ -123,20 +155,13 @@ int main(int argc, char **argv) {
 }
 
 /*
-Function: car_compare()
+Name: car_compare():
 Parameters: const void *a, const void *b, void *udata
 Return: int
 Description:
 
-Comparison function for the B-tree.
-
-Compares two CarInventory records by ID only.
-Returns:
-  -1 if a.ID < b.ID
-   0 if a.ID == b.ID
-   1 if a.ID > b.ID
-
-This ensures the B-tree is keyed on the primary key ID.
+B-tree comparator that orders CarInventory records solely by ID to ensure the
+tree remains keyed on the primary key column.
 */
 int car_compare(const void *a, const void *b, void *udata) {
   const CarInventory *ca = (const CarInventory *)a;
@@ -154,19 +179,13 @@ int car_compare(const void *a, const void *b, void *udata) {
 }
 
 /*
-Function: load_database()
+Name: load_database():
 Parameters: const char *filename
 Return: struct btree *
 Description:
 
-Opens the given filename (expected format: db.txt),
-reads all tuples, and inserts them into a B-tree
-keyed by ID.
-
-The B-tree uses CarInventory as the element type.
-
-On success, returns a pointer to the B-tree.
-On failure (e.g., fopen error), returns NULL.
+Reads tuples from the flat file database, inserts each CarInventory record into
+the B-tree keyed by ID, and returns the populated tree (or NULL on failure).
 */
 struct btree *load_database(const char *filename) {
   FILE *fp;
@@ -221,14 +240,13 @@ struct btree *load_database(const char *filename) {
 }
 
 /*
-Function: print_iter()
+Name: print_iter():
 Parameters: const void *item, void *udata
 Return: bool
 Description:
 
-Callback used by btree_ascend to print each tuple.
-
-Returns true to continue iteration.
+btree_ascend callback that prints a CarInventory record and returns true so the
+iteration continues through the entire tree.
 */
 bool print_iter(const void *item, void *udata) {
   const CarInventory *car = (const CarInventory *)item;
@@ -242,29 +260,26 @@ bool print_iter(const void *item, void *udata) {
 }
 
 /*
-Function: print_all_tuples()
+Name: print_all_tuples():
 Parameters: struct btree *tree
-Return: Void
+Return: void
 Description:
 
-Iterates through all tuples in ascending order of ID
-and prints them to the console using btree_ascend().
+Iterates through every tuple in ascending ID order using btree_ascend() and
+prints each record, aiding debugging for small datasets.
 */
 void print_all_tuples(struct btree *tree) {
   btree_ascend(tree, NULL, print_iter, NULL);
 }
 
 /*
-Function: load_queries()
-Parameters: const char *filename, Query **queries, int *num_queries
-Return: Void
+Name: skip_ws():
+Parameters: const char *s
+Return: const char *
+Description:
 
-Opens the given filename, parses each query,
-and stores reults in Query** queries.
-
-For each query:
-- Parses the SELECT attribute list into select_attrs and num_select_attrs.
-- Copies the full WHERE condition into where_raw.
+Advances past leading whitespace characters in the provided string and returns
+the first non-space position, simplifying later parsing logic.
 */
 static const char *skip_ws(const char *s) {
   while (*s && isspace((unsigned char)*s)) {
@@ -273,6 +288,15 @@ static const char *skip_ws(const char *s) {
   return s;
 }
 
+/*
+Name: trim_trailing():
+Parameters: char *s
+Return: void
+Description:
+
+Removes trailing whitespace and semicolons from the provided buffer in place so
+that tokens parsed from the SQL-like input are sanitized.
+*/
 static void trim_trailing(char *s) {
   size_t len = strlen(s);
   while (len > 0 && isspace((unsigned char)s[len - 1])) {
@@ -284,6 +308,16 @@ static void trim_trailing(char *s) {
   }
 }
 
+/*
+Name: load_queries():
+Parameters: const char *filename, Query **queries, int *num_queries
+Return: void
+Description:
+
+Parses each SQL-like query from the provided file, capturing the SELECT column
+list and raw WHERE clause, and returns a dynamically sized array of Query
+structures.
+*/
 void load_queries(const char *filename, Query **queries, int *num_queries) {
   FILE *fp = fopen(filename, "r");
   char line[512];
@@ -381,15 +415,16 @@ void load_queries(const char *filename, Query **queries, int *num_queries) {
   fclose(fp);
   *queries = arr;
 }
+/*
+Name: read_identifier():
+Parameters: const char **p, char *out, size_t cap
+Return: bool
+Description:
 
-typedef enum { VAL_INT, VAL_STR } ValueType;
-
-typedef struct {
-  ValueType type;
-  int i;
-  char s[64];
-} Value;
-
+Parses an identifier token (letters, digits, underscores) from the query text,
+stores it into the provided buffer, and advances the caller's pointer if the
+token exists.
+*/
 static bool read_identifier(const char **p, char *out, size_t cap) {
   const char *s = *p;
   size_t i = 0;
@@ -408,6 +443,15 @@ static bool read_identifier(const char **p, char *out, size_t cap) {
   return i > 0;
 }
 
+/*
+Name: read_value():
+Parameters: const char **p, Value *v
+Return: bool
+Description:
+
+Parses either a quoted string or integer literal from the WHERE clause text and
+captures it inside a Value struct so comparisons can be evaluated uniformly.
+*/
 static bool read_value(const char **p, Value *v) {
   const char *s = skip_ws(*p);
   if (*s == '"') {
@@ -434,6 +478,16 @@ static bool read_value(const char **p, Value *v) {
   return true;
 }
 
+/*
+Name: compare_attr_value():
+Parameters: const CarInventory *car, const char *attr, const Value *v
+Return: int
+Description:
+
+Retrieves the named attribute from a CarInventory record, coerces it to the
+proper type, and compares it against the provided literal value returning the
+usual tri-state comparison result.
+*/
 static int compare_attr_value(const CarInventory *car, const char *attr,
                               const Value *v) {
   if (strcasecmp(attr, "ID") == 0 || strcasecmp(attr, "YearMake") == 0 ||
@@ -469,6 +523,15 @@ static int compare_attr_value(const CarInventory *car, const char *attr,
   return strcasecmp(lhs, rhs);
 }
 
+/*
+Name: eval_comparison():
+Parameters: const CarInventory *car, const char **p
+Return: bool
+Description:
+
+Parses a single comparison expression (attr op value) from the WHERE clause,
+evaluates it against the provided CarInventory, and returns true if satisfied.
+*/
 static bool eval_comparison(const CarInventory *car, const char **p) {
   char attr[32];
   char op[3] = {0};
@@ -530,6 +593,15 @@ static bool eval_comparison(const CarInventory *car, const char **p) {
 static bool eval_expr(const CarInventory *car, const char **p);
 static bool eval_factor(const CarInventory *car, const char **p);
 
+/*
+Name: eval_term():
+Parameters: const CarInventory *car, const char **p
+Return: bool
+Description:
+
+Evaluates a sequence of AND-connected factors by recursively calling
+eval_factor and combining the boolean result, consuming the corresponding text.
+*/
 static bool eval_term(const CarInventory *car, const char **p) {
   bool result = eval_factor(car, p);
   const char *s = skip_ws(*p);
@@ -546,6 +618,15 @@ static bool eval_term(const CarInventory *car, const char **p) {
   return result;
 }
 
+/*
+Name: eval_factor():
+Parameters: const CarInventory *car, const char **p
+Return: bool
+Description:
+
+Handles either parenthesized expressions or single comparisons when evaluating
+the WHERE clause, providing the building block for AND/OR parsing.
+*/
 static bool eval_factor(const CarInventory *car, const char **p) {
   const char *s = skip_ws(*p);
   bool result;
@@ -568,6 +649,15 @@ static bool eval_factor(const CarInventory *car, const char **p) {
   return result;
 }
 
+/*
+Name: eval_expr():
+Parameters: const CarInventory *car, const char **p
+Return: bool
+Description:
+
+Evaluates a series of OR-connected terms, yielding the overall truth value of
+the WHERE clause for the given CarInventory record.
+*/
 static bool eval_expr(const CarInventory *car, const char **p) {
   bool result = eval_term(car, p);
   const char *s = skip_ws(*p);
@@ -582,6 +672,15 @@ static bool eval_expr(const CarInventory *car, const char **p) {
   return result;
 }
 
+/*
+Name: match_where():
+Parameters: const CarInventory *car, const char *where_raw
+Return: int
+Description:
+
+Entry for WHERE clause evaluation that trims leading whitespace and runs the
+recursive descent parser, returning 1 when the car satisfies the predicate.
+*/
 int match_where(const CarInventory *car, const char *where_raw) {
   const char *p = where_raw;
   p = skip_ws(p);
@@ -591,6 +690,15 @@ int match_where(const CarInventory *car, const char *where_raw) {
   return eval_expr(car, &p) ? 1 : 0;
 }
 
+/*
+Name: print_selected():
+Parameters: const CarInventory *car, Query *q
+Return: void
+Description:
+
+Prints either every attribute or the requested subset of attributes for a car
+based on the SELECT clause captured in the Query structure.
+*/
 void print_selected(const CarInventory *car, Query *q) {
   int i;
   bool first = true;
@@ -624,11 +732,15 @@ void print_selected(const CarInventory *car, Query *q) {
   }
   printf("\n");
 }
+/*
+Name: process_iter_cb():
+Parameters: const void *item, void *udata
+Return: bool
+Description:
 
-typedef struct {
-  Query *q;
-} ProcessCtx;
-
+btree iterator callback that filters each record via match_where() and prints
+matching tuples for the active query, always continuing the traversal.
+*/
 static bool process_iter_cb(const void *item, void *udata) {
   const CarInventory *car = (const CarInventory *)item;
   ProcessCtx *ctx = (ProcessCtx *)udata;
@@ -638,6 +750,15 @@ static bool process_iter_cb(const void *item, void *udata) {
   return true;
 }
 
+/*
+Name: process_query():
+Parameters: struct btree *tree, Query *q
+Return: void
+Description:
+
+Initializes iterator state and scans the entire B-tree, invoking the callback
+to test each record sequentially against the query's WHERE clause.
+*/
 void process_query(struct btree *tree, Query *q) {
   ProcessCtx ctx = {.q = q};
   btree_ascend(tree, NULL, process_iter_cb, &ctx);
